@@ -4,6 +4,8 @@ import ProtectedPage from "./ProtectedPage"
 import { signOut } from 'firebase/auth';
 import { auth } from '../utils/firebaseConfig';
 import { useRouter } from 'next/navigation';
+import AddPantrySection from "./Pantry/AddPantrySection";
+import ShowPantryList from "./Pantry/ShowPantryList";
 
 export default function Home() {
   const router = useRouter();
@@ -11,8 +13,7 @@ export default function Home() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // Redirect to login page or home page after successful logout
-      router.push('/login'); // or '/'
+      router.push('/login'); 
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -24,6 +25,8 @@ export default function Home() {
         <button onClick={handleLogout} className="bg-red-500 text-white p-2 rounded">
           Logout
         </button>
+        <AddPantrySection/>
+        <ShowPantryList/>
       </ProtectedPage>
     </AuthProvider>
   );
