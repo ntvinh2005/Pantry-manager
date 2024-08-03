@@ -24,7 +24,6 @@ const PantryForm: React.FC = () => {
 
         await addPantryItem(item, image ?? undefined);
 
-        // Reset form fields
         setName('');
         setQuantity(0);
         setUnit('');

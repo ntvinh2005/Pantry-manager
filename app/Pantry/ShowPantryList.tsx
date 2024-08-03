@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../../utils/firebaseConfig'; 
 import { collection, doc, getDocs, updateDoc } from 'firebase/firestore';
+import deletePantry from './deletePantry'
 
 interface PantryItem {
   id: string;  
@@ -61,6 +62,16 @@ const ShowPantryList: React.FC = () => {
     }
   };
 
+  const handleDelete = async (itemId: string) => {
+    try {
+      await deletePantry(itemId);
+      setPantryItems(pantryItems.filter(item => item.id !== itemId));
+      alert('Item deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Pantry Items</h1>
@@ -98,6 +109,12 @@ const ShowPantryList: React.FC = () => {
             </p>
             <p>Expires on: {item.expirationDate}</p>
             {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-24 h-24 object-cover mt-2" />}
+            <button
+              onClick={() => handleDelete(item.id)}
+              className="mt-2 p-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
