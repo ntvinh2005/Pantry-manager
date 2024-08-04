@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../utils/firebaseConfig'; // Adjust the path as needed
+import { auth } from '../../utils/firebaseConfig';
 
 const SignUpPage: React.FC = () => {
   const router = useRouter();
@@ -11,20 +11,16 @@ const SignUpPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const handleSignUp = async () => {
-    // Basic validation
     if (!email || !password) {
       setError('Email and password are required.');
       return;
     }
 
     try {
-      // Perform sign-up logic
       await createUserWithEmailAndPassword(auth, email, password);
 
-      // On success, redirect to the home page
       router.push('/');
     } catch (err) {
-      // Handle errors
       if (err instanceof Error) {
         if (err.message.includes('auth/invalid-email')) {
           setError('Invalid email address.');

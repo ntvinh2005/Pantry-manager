@@ -21,7 +21,6 @@ export default function Home() {
   return (
     <AuthProvider>
       <ProtectedPage>
-        <h1>Hello</h1>
         <button onClick={handleLogout} className="bg-red-500 text-white p-2 rounded">
           Logout
         </button>

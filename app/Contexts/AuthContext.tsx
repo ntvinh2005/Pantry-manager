@@ -1,4 +1,4 @@
-'use client'; // Ensure this line is present
+'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
