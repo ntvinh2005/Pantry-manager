@@ -2,7 +2,8 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import addPantryItem from './addPantry';
 import Webcam from 'react-webcam';
 import axios from 'axios';
-import { uploadImage } from '../../utils/firebaseConfig'; // Adjust the import path
+import { uploadImage } from '../../utils/firebaseConfig';
+import { getAuth } from 'firebase/auth';
 import './PantryForm.css';
 
 interface PantryItem {
@@ -11,6 +12,7 @@ interface PantryItem {
   unit: string;
   expirationDate: string;
   imageUrl?: string;
+  userId: string;
 }
 
 const PantryForm: React.FC = () => {
@@ -23,33 +25,38 @@ const PantryForm: React.FC = () => {
   const [cameraMode, setCameraMode] = useState<boolean>(false);
   const webcamRef = React.useRef<Webcam>(null);
 
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-  
-    // Upload image if it exists
+
+    if (!userId) {
+      console.error('User is not authenticated');
+      return;
+    }
+
     let imageUrl: string | undefined;
     if (image) {
       try {
         imageUrl = await uploadImage(image);
       } catch (error) {
         console.error('Error uploading image:', error);
-        return; // Abort submission if the image upload fails
+        return;
       }
     }
-  
-    // Prepare the item with the image URL if available
+
     const item: PantryItem = {
       name,
       quantity,
       unit,
       expirationDate,
-      imageUrl // Include the image URL if available
+      imageUrl,
+      userId,
     };
-  
+
     try {
-      // Handle the image file conditionally
-      await addPantryItem(item, image || undefined); // Pass 'undefined' if image is null
-      // Clear form fields after successful submission
+      await addPantryItem(item, image || undefined);
       setName('');
       setQuantity(0);
       setUnit('');
@@ -61,7 +68,6 @@ const PantryForm: React.FC = () => {
       console.error('Error adding pantry item:', error);
     }
   };
-  
 
   const handleCapture = React.useCallback(async () => {
     const imageSrc = webcamRef.current?.getScreenshot();
@@ -71,7 +77,6 @@ const PantryForm: React.FC = () => {
       setImage(file);
       setImageSrc(imageSrc);
       
-      // Upload the image and get the URL
       try {
         const imageUrl = await uploadImage(file);
         analyzeImage(imageUrl);
@@ -80,7 +85,7 @@ const PantryForm: React.FC = () => {
       }
     }
   }, [webcamRef]);
-  
+
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -88,7 +93,6 @@ const PantryForm: React.FC = () => {
       const imageUrl = URL.createObjectURL(file);
       setImageSrc(imageUrl);
       
-      // Upload the image and get the URL
       try {
         const url = await uploadImage(file);
         analyzeImage(url);
@@ -105,8 +109,6 @@ const PantryForm: React.FC = () => {
     try {
       const response = await axios.post('/api/analyzeImage', { imageUrl });
       const { description } = response.data;
-      console.log(response.data)
-    
       setName(description || 'Unknown object');
     } catch (error) {
       console.error('Error analyzing image:', error);

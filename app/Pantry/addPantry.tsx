@@ -9,6 +9,7 @@ interface PantryItem {
     unit: string;
     expirationDate: string;
     imageUrl?: string; 
+    userId: string;
 }
 
 const addPantryItem = async (item: Omit<PantryItem, 'id'>, imageFile?: File) => {

@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../../utils/firebaseConfig'; 
-import { collection, doc, getDocs, updateDoc } from 'firebase/firestore';
-import deletePantry from './deletePantry'
+import { collection, doc, getDocs, query, where, updateDoc } from 'firebase/firestore';
+import deletePantry from './deletePantry';
+import { getAuth } from 'firebase/auth';
 
 interface PantryItem {
-  id: string;  
+  id: string;
   name: string;
   quantity: number;
   unit: string;
   expirationDate: string;
-  imageUrl?: string; 
+  imageUrl?: string;
+  userId: string;
 }
 
 const ShowPantryList: React.FC = () => {
@@ -17,13 +19,23 @@ const ShowPantryList: React.FC = () => {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [newQuantity, setNewQuantity] = useState<number>(0);
 
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
+
   useEffect(() => {
     const fetchPantryItems = async () => {
+      if (!userId) {
+        console.error('User is not authenticated');
+        return;
+      }
+
       try {
-        const querySnapshot = await getDocs(collection(db, 'pantryItems'));
+        const pantryRef = collection(db, 'pantryItems');
+        const q = query(pantryRef, where('userId', '==', userId));
+        const querySnapshot = await getDocs(q);
         const items: PantryItem[] = querySnapshot.docs.map(doc => ({
-          id: doc.id, 
-          ...doc.data() as Omit<PantryItem, 'id'> 
+          id: doc.id,
+          ...doc.data() as Omit<PantryItem, 'id'>
         }));
         setPantryItems(items);
       } catch (error) {
@@ -32,7 +44,7 @@ const ShowPantryList: React.FC = () => {
     };
 
     fetchPantryItems();
-  }, []);
+  }, [userId]);
 
   const handleQuantityChange = (itemId: string) => {
     setEditingItemId(itemId);
